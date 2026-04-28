@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>SoftDrive | Profesyonel Otomobil Platformu</title>
+    <title>SoftDrive | Sorunsuz Yönetim Paneli</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,362 +11,312 @@
             --primary: #A8DADC;
             --secondary: #457B9D;
             --accent: #1D3557;
+            --admin-red: #E11D48;
             --soft-red: #FEE2E2;
             --text-red: #B91C1C;
             --soft-orange: #FFEDD5;
             --text-orange: #9A3412;
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--accent); margin: 0; line-height: 1.6; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--accent); margin: 0; }
 
-        /* HEADER - SADECE SAĞ ÜSTTE BUTON */
         header {
             background: white; padding: 15px 8%; display: flex; justify-content: space-between;
-            align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.02); position: sticky; top: 0; z-index: 1000;
+            align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000;
         }
-        .logo { font-weight: 600; font-size: 26px; color: var(--secondary); cursor: pointer; letter-spacing: -1px; }
-        nav { display: flex; align-items: center; gap: 50px; }
-        nav a { text-decoration: none; color: #64748b; font-weight: 500; cursor: pointer; transition: 0.3s; }
-        nav a.active { color: var(--secondary); font-weight: 600; }
+        .logo { font-weight: 600; font-size: 26px; color: var(--secondary); cursor: pointer; }
+        nav { display: flex; align-items: center; gap: 30px; }
+        nav a { text-decoration: none; color: #64748b; font-weight: 500; cursor: pointer; }
+        nav a.active { color: var(--secondary); font-weight: 600; border-bottom: 2px solid var(--secondary); }
+        .nav-admin { color: var(--admin-red) !important; font-weight: 700 !important; display: none; }
         
-        .btn-auth { 
-            background: var(--primary); color: white; border: none; padding: 10px 25px; 
-            border-radius: 14px; cursor: pointer; font-weight: 600; transition: 0.3s;
-        }
+        .btn-auth { background: var(--primary); color: white; border: none; padding: 10px 22px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+        .btn-logout { background: #FEE2E2; color: #B91C1C; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 12px; display: none; }
 
-        /* SAYFA YAPISI */
-        .page-section { max-width: 1000px; margin: 30px auto; padding: 0 20px; display: none; opacity: 0; transition: var(--transition); }
-        .page-section.active { display: block; opacity: 1; transform: translateY(0); }
+        .page-section { max-width: 1000px; margin: 30px auto; padding: 0 20px; display: none; }
+        .page-section.active { display: block; }
         .card { background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin-bottom: 25px; }
 
-        /* HABERLER */
-        .hero-card { position: relative; height: 350px; border-radius: 30px; overflow: hidden; cursor: pointer; }
-        .hero-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .hero-card:hover img { transform: scale(1.05); }
-        .hero-overlay { position: absolute; bottom: 0; width: 100%; padding: 30px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); color: white; box-sizing: border-box; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .news-item { background: white; border-radius: 20px; overflow: hidden; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .news-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
 
-        /* TEPKİ SİSTEMİ */
-        .reaction-bar { display: flex; gap: 12px; margin: 25px 0; justify-content: center; background: #fcfcfc; padding: 15px; border-radius: 20px; }
-        .react-btn { background: white; border: 2px solid transparent; padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 20px; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
-        .react-btn.selected { border-color: var(--primary); background: #E1EAF3; }
+        .admin-card { border: 2px solid var(--admin-red); background: #FFF1F2; }
+        .admin-list-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px; background: white; border-radius: 15px; margin-bottom: 10px;
+            border: 1px solid #FFE4E6;
+        }
+        .btn-sm { padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-edit { background: var(--soft-orange); color: var(--text-orange); margin-right: 5px; }
+        .btn-delete { background: var(--soft-red); color: var(--text-red); }
 
-        /* YORUM SİSTEMİ */
-        .comment-item { background: #f9fafb; padding: 20px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid var(--primary); animation: fadeIn 0.4s; }
-        .comment-actions { display: flex; gap: 10px; margin-top: 10px; }
-        .action-btn { border: none; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .edit-btn { background: var(--soft-orange); color: var(--text-orange); }
-        .delete-btn { background: var(--soft-red); color: var(--text-red); }
-        .spam-alert { background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: center; font-weight: 600; }
-
-        /* PROFİL SAYFASI */
-        .profile-header { display: flex; align-items: center; gap: 25px; margin-bottom: 30px; }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 40px; color: white; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; text-align: center; }
-        .stat-card { background: #f8fafc; padding: 25px; border-radius: 25px; }
-
-        /* FORM ELEMANLARI */
-        input, textarea { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #e2e8f0; outline: none; margin-bottom: 15px; font-family: inherit; box-sizing: border-box; }
-        .btn-submit { background: var(--secondary); color: white; border: none; padding: 12px 25px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+        input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #E2E8F0; outline: none; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; }
         .back-btn { background: none; border: 1.5px solid var(--secondary); color: var(--secondary); padding: 8px 18px; border-radius: 12px; cursor: pointer; margin-bottom: 15px; font-weight: 600; }
-
-        /* AUTH MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .google-account { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 12px; cursor: pointer; transition: 0.2s; border: 1px solid #eee; margin-bottom: 10px; }
-        .google-account:hover { background: #f1f5f9; border-color: var(--primary); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="logo" onclick="location.reload()">SoftDrive.</div>
+    <div class="logo" onclick="showPage('news')">SoftDrive.</div>
     <nav>
         <a onclick="showPage('news')" id="nav-news" class="active">Haberler</a>
         <a onclick="showPage('forum')" id="nav-forum">Forum</a>
-        <a onclick="showPage('profile')" id="nav-profile">Profilim</a>
-        <button class="btn-auth" id="main-auth-btn" onclick="openAuthModal()">Giriş Yap</button>
+        <a onclick="showPage('profile')" id="nav-profile">Profil</a>
+        <a onclick="showPage('admin')" id="nav-admin" class="nav-admin">Yönetim</a>
+        <button class="btn-auth" id="login-btn" onclick="openAuthModal()">Giriş Yap</button>
+        <button class="btn-logout" id="logout-btn" onclick="handleLogout()">Çıkış</button>
     </nav>
 </header>
 
-<!-- HABERLER -->
 <div id="news-page" class="page-section active">
-    <div id="news-list">
-        <div class="card hero-card" onclick="openNews('news1', 'Geleceğin Enerjisi: Hidrojen Motorlar', 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=1200')">
-            <img src="https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=1200">
-            <div class="hero-overlay">
-                <h1>Geleceğin Enerjisi: Hidrojen Motorlar</h1>
-                <p>Elektrikli araçlara rakip mi doğuyor? Tüm detaylar burada.</p>
-            </div>
-        </div>
+    <div id="news-list-container">
+        <div class="news-grid" id="news-grid"></div>
     </div>
-    <div id="news-detail" style="display:none">
-        <button class="back-btn" onclick="closeNews()">← Haberlere Dön</button>
+    <div id="news-detail-view" style="display:none">
+        <button class="back-btn" onclick="closeNewsDetail()">← Geri Dön</button>
         <div class="card">
-            <h1 id="det-title"></h1>
-            <img id="det-img" src="" style="width:100%; border-radius:25px;">
-            <div class="reaction-bar">
-                <button class="react-btn" onclick="handleReaction('heart')">❤️ <span id="news-heart">8</span></button>
-                <button class="react-btn" onclick="handleReaction('fire')">🔥 <span id="news-fire">15</span></button>
-                <button class="react-btn" onclick="handleReaction('smile')">😄 <span id="news-smile">12</span></button>
-                <button class="react-btn" onclick="handleReaction('cry')">😢 <span id="news-cry">0</span></button>
-                <button class="react-btn" onclick="handleReaction('wow')">😲 <span id="news-wow">3</span></button>
-            </div>
-            <h3>Yorumlar</h3>
-            <div id="news-spam-alert" class="spam-alert">Yorum yapma sınırına ulaşıldı.</div>
-            <div id="news-comments-list"></div>
-            <textarea id="news-input" placeholder="Bu haber hakkında ne düşünüyorsunuz?" rows="3"></textarea>
-            <button class="btn-submit" onclick="submitComment('news')">Gönder</button>
+            <img id="full-img" src="" style="width:100%; border-radius:20px; max-height:450px; object-fit:cover;">
+            <h1 id="full-title"></h1>
+            <p id="full-content" style="line-height:1.8; color:#4b5563; white-space: pre-wrap;"></p>
         </div>
     </div>
 </div>
 
-<!-- FORUM -->
 <div id="forum-page" class="page-section">
-    <div class="card" style="background: #f0f9ff; border: 2px dashed var(--primary);">
-        <h3>💬 Topluluğa Sor</h3>
+    <div class="card" style="background:#F0F9FF; border:2px dashed var(--primary);">
+        <h3>💬 Soru Sor</h3>
         <input type="text" id="forum-q-title" placeholder="Soru başlığı...">
-        <textarea id="forum-q-desc" placeholder="Detaylar..." rows="2"></textarea>
-        <button class="btn-submit" onclick="createTopic()">Yayınla</button>
+        <button class="btn-auth" onclick="addForumPost()">Yayınla</button>
     </div>
-    <div id="forum-items-list">
-        <div class="card" style="cursor:pointer" onclick="openThread('f1', 'Hangi yakıt türü daha ekonomik?', 'OtoTutkunu')">
-            <strong>Hangi yakıt türü daha ekonomik?</strong><br><small>Yazar: OtoTutkunu</small>
+    <div id="forum-container"></div>
+</div>
+
+<div id="admin-page" class="page-section">
+    <div class="card admin-card">
+        <h2 style="color:var(--admin-red)">⚙️ Yönetim Paneli</h2>
+        <div id="admin-news-form">
+            <h3 id="adm-form-title">📰 Haber Ekle/Düzenle</h3>
+            <input type="text" id="adm-news-title" placeholder="Haber Başlığı">
+            <input type="text" id="adm-news-img" placeholder="Resim JPG yolu (araba.jpg)">
+            <textarea id="adm-news-full" placeholder="Haber Detayı..." rows="5"></textarea>
+            <button class="btn-auth" id="adm-news-btn" style="background:var(--admin-red); width:100%;" onclick="adminSaveNews()">Haberi Kaydet</button>
+            <button class="btn-auth" id="adm-cancel-btn" style="background:#ccc; width:100%; margin-top:10px; display:none;" onclick="cancelNewsEdit()">Vazgeç</button>
         </div>
-    </div>
-    <div id="forum-thread" style="display:none">
-        <button class="back-btn" onclick="closeThread()">← Foruma Dön</button>
-        <div class="card">
-            <h2 id="thr-title"></h2>
-            <div id="forum-replies-list"></div>
-            <div id="forum-spam-alert" class="spam-alert">Yorum yapma sınırına ulaşıldı.</div>
-            <textarea id="forum-input" placeholder="Yanıtınızı buraya yazın..." rows="4" style="margin-top:20px;"></textarea>
-            <button class="btn-submit" onclick="submitComment('forum')">Yanıtla</button>
-        </div>
+        <hr style="margin:30px 0;">
+        <h3>📂 Haber Listesi</h3>
+        <div id="adm-news-list"></div>
+        <hr style="margin:30px 0;">
+        <h3>💬 Forum Listesi</h3>
+        <div id="adm-forum-list"></div>
     </div>
 </div>
 
-<!-- PROFİL SADELEŞTİRİLMİŞ -->
 <div id="profile-page" class="page-section">
-    <div class="card">
-        <div class="profile-header">
-            <div class="profile-avatar">S</div>
-            <div>
-                <h2 id="prof-name">Profilim</h2>
-                <p id="prof-email">Giriş yapıldığında bilgileriniz burada görünür.</p>
-            </div>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h4 id="stat-comments">0</h4>
-                <p>Toplam Yorum</p>
-            </div>
-            <div class="stat-card">
-                <h4 id="stat-reactions">0</h4>
-                <p>Verilen Tepki</p>
-            </div>
-        </div>
-    </div>
+    <div class="card"><h2 id="prof-name">Misafir</h2><p id="prof-email">Lütfen giriş yapın.</p></div>
 </div>
 
-<!-- MODAL GİRİŞ -->
 <div class="modal-overlay" id="authModal">
-    <div class="card" style="width:400px; position:relative;">
-        <span style="position:absolute; top:20px; right:25px; cursor:pointer; font-size:24px; color:#aaa;" onclick="closeAuthModal()">&times;</span>
-        
-        <div id="view-login">
-            <h2>Giriş Yap</h2>
-            <input type="email" placeholder="E-posta">
-            <input type="password" placeholder="Şifre">
-            <button class="btn-auth" style="width:100%" onclick="mockLogin('SoftUser', 'soft@user.com')">Giriş Yap</button>
-            <div style="text-align:center; margin:15px 0; font-size:12px; color:#ccc;">yada</div>
-            <button style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; background:white; cursor:pointer; font-weight:600;" onclick="switchAuth('google')">Google ile Devam Et</button>
-            <p style="text-align:center; font-size:14px; margin-top:15px;">Hesabın yok mu? <span onclick="switchAuth('register')" style="color:var(--secondary); cursor:pointer; font-weight:600;">Kayıt Ol</span></p>
-        </div>
-
-        <div id="view-register" style="display:none">
-            <h2>Kayıt Ol</h2>
-            <input type="text" placeholder="Ad Soyad">
-            <input type="email" placeholder="E-posta">
-            <input type="password" placeholder="Şifre">
-            <button class="btn-auth" style="width:100%" onclick="mockLogin('Yeni Üye', 'yeni@softdrive.com')">Hesap Oluştur</button>
-            <p style="text-align:center; font-size:14px; margin-top:15px;">Zaten üye misin? <span onclick="switchAuth('login')" style="color:var(--secondary); cursor:pointer; font-weight:600;">Giriş Yap</span></p>
-        </div>
-
-        <div id="view-google" style="display:none">
-            <h2>Hesap Seçin</h2>
-            <div class="google-account" onclick="mockLogin('Ahmet Yılmaz', 'ahmet@gmail.com')">
-                <strong>Ahmet Yılmaz</strong><br><small>ahmet@gmail.com</small>
-            </div>
-            <div class="google-account" onclick="mockLogin('Elif Demir', 'elif@gmail.com')">
-                <strong>Elif Demir</strong><br><small>elif@gmail.com</small>
-            </div>
-        </div>
+    <div class="card" style="width:350px; position:relative;">
+        <span style="position:absolute; top:20px; right:25px; cursor:pointer;" onclick="closeAuthModal()">✕</span>
+        <h2>Giriş Yap</h2>
+        <input type="email" id="login-email" placeholder="admin@softdrive.com">
+        <input type="password" id="login-pass" placeholder="admin123">
+        <button class="btn-auth" style="width:100%" onclick="handleLogin()">Giriş</button>
     </div>
 </div>
 
 <script>
-    // --- TEMEL VERİLER ---
-    let currentUser = { comments: 0, reactions: 0 };
-    let storage = { news: [], forum: {} };
-    let activeThreadId = "";
-    let editIndex = -1;
-    let userReaction = null;
+    // --- VERİ SİSTEMİ (TEMİZ BAŞLANGIÇ) ---
+    const DB_KEY = 'SOFTDRIVE_CLEAN_DATA';
+    
+    // Uygulama her açıldığında LocalStorage'da veri yoksa varsayılanları yükle
+    let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
+        news: [{id: 1, title:"Hoş Geldiniz", img:"https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800", full:"Admin paneli aktif!"}],
+        forum: [{id: 1, title:"SoftDrive hakkında ne düşünüyorsunuz?", author:"Yönetici"}],
+        user: null
+    };
 
-    // --- NAVİGASYON ---
-    function showPage(id) {
-        document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-        document.getElementById(id + '-page').classList.add('active');
-        document.getElementById('nav-' + id).classList.add('active');
-        if(id === 'news') closeNews();
-        if(id === 'forum') closeThread();
+    let editingId = null;
+
+    function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+    // --- UI GÜNCELLEME ---
+    function updateUI() {
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const adminNav = document.getElementById('nav-admin');
+
+        if(db.user) {
+            loginBtn.style.display = 'none';
+            logoutBtn.style.display = 'block';
+            logoutBtn.innerText = `Çıkış (${db.user.name})`;
+            adminNav.style.display = db.user.role === 'admin' ? 'block' : 'none';
+            document.getElementById('prof-name').innerText = db.user.name;
+            document.getElementById('prof-email').innerText = db.user.email;
+        } else {
+            loginBtn.style.display = 'block';
+            logoutBtn.style.display = 'none';
+            adminNav.style.display = 'none';
+            document.getElementById('prof-name').innerText = "Misafir";
+        }
     }
 
-    // --- AUTH MODAL ---
+    function showPage(p) {
+        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+        document.getElementById(p+'-page').classList.add('active');
+        if(document.getElementById('nav-'+p)) document.getElementById('nav-'+p).classList.add('active');
+        
+        if(p==='news') { closeNewsDetail(); renderNews(); }
+        if(p==='forum') renderForum();
+        if(p==='admin') renderAdminPanels();
+        updateUI();
+    }
+
+    // --- HABERLER ---
+    function renderNews() {
+        const container = document.getElementById('news-grid');
+        container.innerHTML = db.news.map(n => `
+            <div class="news-item" onclick="showNewsDetail(${n.id})">
+                <img src="${n.img}" class="news-img" onerror="this.src='https://via.placeholder.com/400x200'">
+                <div style="padding:15px"><h3>${n.title}</h3></div>
+            </div>
+        `).join('');
+    }
+
+    function showNewsDetail(id) {
+        const n = db.news.find(x => x.id == id);
+        if(!n) return;
+        document.getElementById('news-list-container').style.display = 'none';
+        document.getElementById('news-detail-view').style.display = 'block';
+        document.getElementById('full-img').src = n.img;
+        document.getElementById('full-title').innerText = n.title;
+        document.getElementById('full-content').innerText = n.full;
+    }
+
+    function closeNewsDetail() {
+        document.getElementById('news-detail-view').style.display = 'none';
+        document.getElementById('news-list-container').style.display = 'block';
+    }
+
+    // --- YÖNETİM İŞLEMLERİ (SİLME VE DÜZENLEME) ---
+    function renderAdminPanels() {
+        // Haber Listesini Bas
+        document.getElementById('adm-news-list').innerHTML = db.news.map(n => `
+            <div class="admin-list-item">
+                <span>${n.title}</span>
+                <div>
+                    <button class="btn-sm btn-edit" onclick="startEditNews(${n.id})">Düzenle</button>
+                    <button class="btn-sm btn-delete" onclick="deleteNews(${n.id})">SİL</button>
+                </div>
+            </div>
+        `).join('');
+
+        // Forum Listesini Bas
+        document.getElementById('adm-forum-list').innerHTML = db.forum.map(f => `
+            <div class="admin-list-item">
+                <span>${f.title}</span>
+                <button class="btn-sm btn-delete" onclick="deleteForum(${f.id})">SİL</button>
+            </div>
+        `).join('');
+    }
+
+    function deleteNews(id) {
+        if(confirm("Bu haberi SİLECEĞİM. Onaylıyor musun?")) {
+            db.news = db.news.filter(n => n.id != id); // Silme işlemi
+            save(); // Hafızaya kaydet
+            renderAdminPanels(); // Listeyi güncelle
+            alert("Haber silindi.");
+        }
+    }
+
+    function deleteForum(id) {
+        if(confirm("Bu soruyu SİLECEĞİM. Onaylıyor musun?")) {
+            db.forum = db.forum.filter(f => f.id != id); // Silme işlemi
+            save(); // Hafızaya kaydet
+            renderAdminPanels(); // Listeyi güncelle
+            alert("Soru silindi.");
+        }
+    }
+
+    function adminSaveNews() {
+        const title = document.getElementById('adm-news-title').value;
+        const img = document.getElementById('adm-news-img').value;
+        const full = document.getElementById('adm-news-full').value;
+        
+        if(!title || !img) return alert("Başlık ve Resim alanı boş olamaz!");
+
+        if(editingId !== null) {
+            const index = db.news.findIndex(x => x.id == editingId);
+            db.news[index] = { id: editingId, title, img, full };
+            editingId = null;
+            alert("Değişiklikler kaydedildi.");
+        } else {
+            db.news.unshift({ id: Date.now(), title, img, full });
+            alert("Haber eklendi.");
+        }
+        
+        save();
+        cancelNewsEdit();
+        renderAdminPanels();
+    }
+
+    function startEditNews(id) {
+        const n = db.news.find(x => x.id == id);
+        editingId = n.id;
+        document.getElementById('adm-news-title').value = n.title;
+        document.getElementById('adm-news-img').value = n.img;
+        document.getElementById('adm-news-full').value = n.full;
+        document.getElementById('adm-form-title').innerText = "📝 Haberi Güncelle";
+        document.getElementById('adm-cancel-btn').style.display = "block";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelNewsEdit() {
+        editingId = null;
+        document.getElementById('adm-form-title').innerText = "📰 Haber Ekle/Düzenle";
+        document.getElementById('adm-cancel-btn').style.display = "none";
+        document.getElementById('adm-news-title').value = "";
+        document.getElementById('adm-news-img').value = "";
+        document.getElementById('adm-news-full').value = "";
+    }
+
+    // --- DİĞER ---
+    function renderForum() {
+        document.getElementById('forum-container').innerHTML = db.forum.map(f => `
+            <div class="card"><strong>${f.title}</strong><br><small>Yazar: ${f.author}</small></div>
+        `).join('');
+    }
+
+    function addForumPost() {
+        if(!db.user) return openAuthModal();
+        const t = document.getElementById('forum-q-title').value;
+        if(!t) return;
+        db.forum.unshift({ id: Date.now(), title: t, author: db.user.name });
+        save(); renderForum(); document.getElementById('forum-q-title').value="";
+    }
+
+    function handleLogin() {
+        const e = document.getElementById('login-email').value;
+        const p = document.getElementById('login-pass').value;
+        if(e === "admin@softdrive.com" && p === "admin123") {
+            db.user = { name: "Yönetici", role: "admin", email: e };
+            save(); updateUI(); closeAuthModal(); showPage('admin');
+        } else if(e.includes('@')) {
+            db.user = { name: e.split('@')[0], role: "user", email: e };
+            save(); updateUI(); closeAuthModal(); showPage('news');
+        } else alert("Geçersiz e-posta!");
+    }
+
+    function handleLogout() { db.user = null; save(); updateUI(); showPage('news'); }
     function openAuthModal() { document.getElementById('authModal').style.display = 'flex'; }
     function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
-    function switchAuth(view) {
-        document.getElementById('view-login').style.display = 'none';
-        document.getElementById('view-register').style.display = 'none';
-        document.getElementById('view-google').style.display = 'none';
-        document.getElementById('view-' + view).style.display = 'block';
-    }
-    function mockLogin(name, email) {
-        document.getElementById('prof-name').innerText = name;
-        document.getElementById('prof-email').innerText = email;
-        document.getElementById('main-auth-btn').innerText = name;
-        closeAuthModal();
-    }
 
-    // --- YORUM SİSTEMİ ---
-    function submitComment(type) {
-        const inputId = type === 'news' ? 'news-input' : 'forum-input';
-        const text = document.getElementById(inputId).value;
-        if(!text.trim()) return;
-
-        let list = type === 'news' ? storage.news : (storage.forum[activeThreadId] || []);
-
-        if(editIndex > -1) {
-            list[editIndex].text = text;
-            editIndex = -1;
-        } else {
-            if(list.length >= 3) {
-                document.getElementById(type + '-spam-alert').style.display = 'block';
-                return;
-            }
-            list.push({ text: text, id: Date.now() });
-            if(type === 'forum') storage.forum[activeThreadId] = list;
-            currentUser.comments++;
-        }
-        document.getElementById(inputId).value = "";
-        updateStats();
-        renderComments(type);
-    }
-
-    function renderComments(type) {
-        const container = document.getElementById(type === 'news' ? 'news-comments-list' : 'forum-replies-list');
-        const list = type === 'news' ? storage.news : (storage.forum[activeThreadId] || []);
-        container.innerHTML = "";
-        list.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = 'comment-item';
-            div.innerHTML = `<b>@Siz:</b><p>${item.text}</p>
-                <div class="comment-actions">
-                    <button class="action-btn edit-btn" onclick="startEdit('${type}', ${index})">Düzenle</button>
-                    <button class="action-btn delete-btn" onclick="deleteComment('${type}', ${index})">Sil</button>
-                </div>`;
-            container.appendChild(div);
-        });
-    }
-
-    function startEdit(type, index) {
-        const list = type === 'news' ? storage.news : storage.forum[activeThreadId];
-        document.getElementById(type === 'news' ? 'news-input' : 'forum-input').value = list[index].text;
-        editIndex = index;
-    }
-
-    function deleteComment(type, index) {
-        const list = type === 'news' ? storage.news : storage.forum[activeThreadId];
-        list.splice(index, 1);
-        currentUser.comments--;
-        updateStats();
-        renderComments(type);
-        document.getElementById(type + '-spam-alert').style.display = 'none';
-    }
-
-    // --- HABER & FORUM YARDIMCI ---
-    function openNews(id, title, img) {
-        document.getElementById('news-list').style.display = 'none';
-        document.getElementById('det-title').innerText = title;
-        document.getElementById('det-img').src = img;
-        document.getElementById('news-detail').style.display = 'block';
-        renderComments('news');
-    }
-    function closeNews() {
-        document.getElementById('news-detail').style.display = 'none';
-        document.getElementById('news-list').style.display = 'block';
-    }
-    function openThread(id, title, author) {
-        activeThreadId = id;
-        document.getElementById('forum-items-list').style.display = 'none';
-        document.getElementById('thr-title').innerText = title;
-        document.getElementById('forum-thread').style.display = 'block';
-        renderComments('forum');
-    }
-    function closeThread() {
-        document.getElementById('forum-thread').style.display = 'none';
-        document.getElementById('forum-items-list').style.display = 'block';
-    }
-    function createTopic() {
-        const title = document.getElementById('forum-q-title').value;
-        if(!title) return;
-        const div = document.createElement('div');
-        div.className = "card"; div.style = "cursor:pointer";
-        div.onclick = () => openThread('f'+Date.now(), title, 'Siz');
-        div.innerHTML = `<strong>${title}</strong><br><small>Yazar: Siz</small>`;
-        document.getElementById('forum-items-list').prepend(div);
-        document.getElementById('forum-q-title').value = "";
-    }
-
-    // --- TEPKİ & İSTATİSTİK ---
-    function handleReaction(type) {
-        const span = document.getElementById('news-' + type);
-        let count = parseInt(span.innerText);
-        if (userReaction === type) {
-            span.innerText = count - 1;
-            userReaction = null;
-            currentUser.reactions--;
-        } else {
-            if (userReaction !== null) {
-                document.getElementById('news-' + userReaction).innerText = parseInt(document.getElementById('news-' + userReaction).innerText) - 1;
-                currentUser.reactions--;
-            }
-            span.innerText = count + 1;
-            userReaction = type;
-            currentUser.reactions++;
-        }
-        updateStats();
-        updateReactionUI();
-    }
-
-    function updateReactionUI() {
-        document.querySelectorAll('.react-btn').forEach(btn => {
-            btn.classList.remove('selected');
-            if (userReaction && btn.getAttribute('onclick').includes(userReaction)) btn.classList.add('selected');
-        });
-    }
-
-    function updateStats() {
-        document.getElementById('stat-comments').innerText = currentUser.comments;
-        document.getElementById('stat-reactions').innerText = currentUser.reactions;
-    }
-
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('authModal')) closeAuthModal();
-    }
+    // BAŞLAT
+    updateUI();
+    renderNews();
 </script>
-
 </body>
 </html>
