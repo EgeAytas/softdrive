@@ -2,321 +2,301 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>SoftDrive | Sorunsuz Yönetim Paneli</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>SoftDrive | Gerçek E-posta Doğrulamalı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- EmailJS Kütüphanesi -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         :root {
-            --bg: #F8FAFC;
-            --card: #FFFFFF;
-            --primary: #A8DADC;
-            --secondary: #457B9D;
-            --accent: #1D3557;
-            --admin-red: #E11D48;
-            --soft-red: #FEE2E2;
-            --text-red: #B91C1C;
-            --soft-orange: #FFEDD5;
-            --text-orange: #9A3412;
+            --bg: #F3F4F6; --card: #FFFFFF; --header-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #111827; --text-dim: #6B7280; --primary: #0284C7;
+            --accent: #F43F5E; --border: rgba(0, 0, 0, 0.08); --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--accent); margin: 0; }
+        [data-theme="dark"] {
+            --bg: #0F172A; --card: #1E293B; --header-bg: rgba(30, 41, 59, 0.9);
+            --text-main: #F1F5F9; --text-dim: #94A3B8; --border: rgba(255, 255, 255, 0.08);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; transition: background 0.5s; }
 
         header {
-            background: white; padding: 15px 8%; display: flex; justify-content: space-between;
+            background: var(--header-bg); backdrop-filter: blur(10px);
+            padding: 15px 8%; display: flex; justify-content: space-between;
             align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000;
         }
-        .logo { font-weight: 600; font-size: 26px; color: var(--secondary); cursor: pointer; }
-        nav { display: flex; align-items: center; gap: 30px; }
-        nav a { text-decoration: none; color: #64748b; font-weight: 500; cursor: pointer; }
-        nav a.active { color: var(--secondary); font-weight: 600; border-bottom: 2px solid var(--secondary); }
-        .nav-admin { color: var(--admin-red) !important; font-weight: 700 !important; display: none; }
-        
+        .logo { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; cursor: pointer; }
+        .logo span { color: var(--primary); }
+        nav { display: flex; align-items: center; gap: 25px; }
+        nav a { text-decoration: none; color: var(--text-dim); font-size: 13px; text-transform: uppercase; font-weight: 600; cursor: pointer; }
+        nav a.active { color: var(--primary); }
+
         .btn-auth { background: var(--primary); color: white; border: none; padding: 10px 22px; border-radius: 12px; cursor: pointer; font-weight: 600; }
-        .btn-logout { background: #FEE2E2; color: #B91C1C; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 12px; display: none; }
+        .theme-toggle { background: none; border: 1px solid var(--border); padding: 8px; border-radius: 10px; cursor: pointer; color: var(--text-main); }
 
-        .page-section { max-width: 1000px; margin: 30px auto; padding: 0 20px; display: none; }
-        .page-section.active { display: block; }
-        .card { background: white; border-radius: 30px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin-bottom: 25px; }
+        .page-section { max-width: 1200px; margin: 40px auto; padding: 0 20px; display: none; opacity: 0; transform: translateY(20px); transition: var(--transition); }
+        .page-section.active { display: block; opacity: 1; transform: translateY(0); }
+        .card { background: var(--card); border-radius: 25px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border); }
 
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .news-item { background: white; border-radius: 20px; overflow: hidden; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
-        .news-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
+        /* MAGAZİN GRID */
+        .magazine-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
+        .news-item { position: relative; border-radius: 20px; overflow: hidden; height: 350px; cursor: pointer; transition: 0.4s; }
+        .news-item:first-child { grid-column: span 2; height: 450px; }
+        .news-item img { width: 100%; height: 100%; object-fit: cover; }
+        .news-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); color: white; }
 
-        .admin-card { border: 2px solid var(--admin-red); background: #FFF1F2; }
-        .admin-list-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 15px; background: white; border-radius: 15px; margin-bottom: 10px;
-            border: 1px solid #FFE4E6;
-        }
-        .btn-sm { padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .btn-edit { background: var(--soft-orange); color: var(--text-orange); margin-right: 5px; }
-        .btn-delete { background: var(--soft-red); color: var(--text-red); }
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .auth-card { background: var(--card); width: 400px; padding: 40px; border-radius: 30px; text-align: center; position: relative; }
+        input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text-main); margin-bottom: 15px; font-family: inherit; box-sizing: border-box; }
+        
+        .loading-spinner { display: none; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #E2E8F0; outline: none; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; }
-        .back-btn { background: none; border: 1.5px solid var(--secondary); color: var(--secondary); padding: 8px 18px; border-radius: 12px; cursor: pointer; margin-bottom: 15px; font-weight: 600; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .reaction-bar { display: flex; gap: 10px; justify-content: center; margin: 20px 0; }
+        .react-btn { background: var(--card); border: 1px solid var(--border); padding: 8px 15px; border-radius: 50px; cursor: pointer; color: var(--text-main); transition: 0.3s; }
+        .react-btn.selected { border-color: var(--primary); background: rgba(2, 132, 199, 0.1); }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="logo" onclick="showPage('news')">SoftDrive.</div>
+    <div class="logo" onclick="showPage('news')">SOFT<span>DRIVE.</span></div>
     <nav>
         <a onclick="showPage('news')" id="nav-news" class="active">Haberler</a>
-        <a onclick="showPage('forum')" id="nav-forum">Forum</a>
+        <a onclick="showPage('community')" id="nav-community">Topluluk</a>
         <a onclick="showPage('profile')" id="nav-profile">Profil</a>
-        <a onclick="showPage('admin')" id="nav-admin" class="nav-admin">Yönetim</a>
+        <a onclick="showPage('admin')" id="nav-admin" style="display:none; color:var(--accent);">Admin</a>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-icon">🌙</button>
         <button class="btn-auth" id="login-btn" onclick="openAuthModal()">Giriş Yap</button>
-        <button class="btn-logout" id="logout-btn" onclick="handleLogout()">Çıkış</button>
+        <button class="btn-auth" id="logout-btn" style="display:none; background:var(--accent)" onclick="handleLogout()">Çıkış</button>
     </nav>
 </header>
 
+<!-- SAYFALAR -->
 <div id="news-page" class="page-section active">
-    <div id="news-list-container">
-        <div class="news-grid" id="news-grid"></div>
-    </div>
+    <div id="news-list-container"><div class="magazine-grid" id="news-grid"></div></div>
     <div id="news-detail-view" style="display:none">
-        <button class="back-btn" onclick="closeNewsDetail()">← Geri Dön</button>
+        <button class="btn-auth" style="background:none; color:var(--text-dim); margin-bottom:20px;" onclick="closeNewsDetail()">← Geri</button>
         <div class="card">
-            <img id="full-img" src="" style="width:100%; border-radius:20px; max-height:450px; object-fit:cover;">
+            <img id="full-img" src="" style="width:100%; border-radius:25px; max-height:450px; object-fit:cover;">
             <h1 id="full-title"></h1>
-            <p id="full-content" style="line-height:1.8; color:#4b5563; white-space: pre-wrap;"></p>
+            <p id="full-content" style="line-height:1.8; white-space:pre-wrap;"></p>
+            <div class="reaction-bar" id="react-bar"></div>
+            <hr>
+            <h3>Yorumlar</h3>
+            <div id="news-comments"></div>
+            <textarea id="news-input" placeholder="Yorumunuz..."></textarea>
+            <button class="btn-auth" onclick="submitComment('news')">Yorum Yap</button>
         </div>
     </div>
 </div>
 
-<div id="forum-page" class="page-section">
-    <div class="card" style="background:#F0F9FF; border:2px dashed var(--primary);">
-        <h3>💬 Soru Sor</h3>
-        <input type="text" id="forum-q-title" placeholder="Soru başlığı...">
-        <button class="btn-auth" onclick="addForumPost()">Yayınla</button>
+<div id="community-page" class="page-section">
+    <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
+        <h2>Topluluk</h2>
+        <button class="btn-auth" onclick="openAskModal()">Soru Sor</button>
     </div>
-    <div id="forum-container"></div>
+    <div id="community-container"></div>
 </div>
 
 <div id="admin-page" class="page-section">
-    <div class="card admin-card">
-        <h2 style="color:var(--admin-red)">⚙️ Yönetim Paneli</h2>
-        <div id="admin-news-form">
-            <h3 id="adm-form-title">📰 Haber Ekle/Düzenle</h3>
-            <input type="text" id="adm-news-title" placeholder="Haber Başlığı">
-            <input type="text" id="adm-news-img" placeholder="Resim JPG yolu (araba.jpg)">
-            <textarea id="adm-news-full" placeholder="Haber Detayı..." rows="5"></textarea>
-            <button class="btn-auth" id="adm-news-btn" style="background:var(--admin-red); width:100%;" onclick="adminSaveNews()">Haberi Kaydet</button>
-            <button class="btn-auth" id="adm-cancel-btn" style="background:#ccc; width:100%; margin-top:10px; display:none;" onclick="cancelNewsEdit()">Vazgeç</button>
-        </div>
-        <hr style="margin:30px 0;">
-        <h3>📂 Haber Listesi</h3>
+    <div class="card" style="border-top:5px solid var(--accent)">
+        <h2>⚙️ Yönetim</h2>
+        <input type="text" id="adm-title" placeholder="Başlık">
+        <input type="text" id="adm-img" placeholder="Resim yolu (JPG)">
+        <textarea id="adm-full" placeholder="İçerik..." rows="4"></textarea>
+        <button class="btn-auth" style="background:var(--accent); width:100%;" onclick="adminAddNews()">Haberi Yayınla</button>
+        <hr>
         <div id="adm-news-list"></div>
-        <hr style="margin:30px 0;">
-        <h3>💬 Forum Listesi</h3>
-        <div id="adm-forum-list"></div>
     </div>
 </div>
 
 <div id="profile-page" class="page-section">
-    <div class="card"><h2 id="prof-name">Misafir</h2><p id="prof-email">Lütfen giriş yapın.</p></div>
+    <div class="card" style="text-align:center;">
+        <h2 id="prof-name">Misafir</h2>
+        <p id="prof-email">Giriş yapınız.</p>
+    </div>
 </div>
 
+<!-- AUTH MODAL -->
 <div class="modal-overlay" id="authModal">
-    <div class="card" style="width:350px; position:relative;">
-        <span style="position:absolute; top:20px; right:25px; cursor:pointer;" onclick="closeAuthModal()">✕</span>
-        <h2>Giriş Yap</h2>
-        <input type="email" id="login-email" placeholder="admin@softdrive.com">
-        <input type="password" id="login-pass" placeholder="admin123">
-        <button class="btn-auth" style="width:100%" onclick="handleLogin()">Giriş</button>
+    <div class="auth-card">
+        <span style="position:absolute; top:20px; right:25px; cursor:pointer;" onclick="closeModal('authModal')">✕</span>
+        
+        <!-- Giriş -->
+        <div id="view-login">
+            <h2>Giriş Yap</h2>
+            <input type="email" id="log-email" placeholder="E-posta">
+            <input type="password" id="log-pass" placeholder="Şifre">
+            <button class="btn-auth" style="width:100%" onclick="handleLogin()">Giriş</button>
+            <p style="font-size:13px; margin-top:15px;">Hesabın yok mu? <span onclick="switchAuth('register')" style="color:var(--primary); cursor:pointer;">Kayıt Ol</span></p>
+        </div>
+
+        <!-- Kayıt -->
+        <div id="view-register" style="display:none">
+            <h2>Kayıt Ol</h2>
+            <input type="text" id="reg-name" placeholder="Ad Soyad">
+            <input type="email" id="reg-email" placeholder="E-posta Adresi">
+            <input type="password" id="reg-pass" placeholder="Şifre">
+            <div id="loader" class="loading-spinner"></div>
+            <button class="btn-auth" id="reg-btn" style="width:100%" onclick="handleRegister()">Kod Gönder</button>
+            <p style="font-size:13px; margin-top:15px;">Zaten üye misin? <span onclick="switchAuth('login')" style="color:var(--primary); cursor:pointer;">Giriş Yap</span></p>
+        </div>
+
+        <!-- Doğrulama -->
+        <div id="view-verify" style="display:none">
+            <h2>E-postanı Kontrol Et</h2>
+            <p style="font-size:13px; color:var(--text-dim);">Girdiğin adrese 4 haneli bir kod gönderdik.</p>
+            <input type="text" id="verify-input" placeholder="0000" maxlength="4" style="text-align:center; font-size:24px; letter-spacing:10px;">
+            <button class="btn-auth" style="width:100%" onclick="handleVerify()">Hesabı Onayla</button>
+        </div>
+    </div>
+</div>
+
+<!-- SORU SOR MODAL -->
+<div class="modal-overlay" id="askModal">
+    <div class="auth-card">
+        <h2>Topluluğa Sor</h2>
+        <input type="text" id="ask-title" placeholder="Başlık...">
+        <button class="btn-auth" style="width:100%" onclick="submitAsk()">Yayınla</button>
     </div>
 </div>
 
 <script>
-    // --- VERİ SİSTEMİ (TEMİZ BAŞLANGIÇ) ---
-    const DB_KEY = 'SOFTDRIVE_CLEAN_DATA';
-    
-    // Uygulama her açıldığında LocalStorage'da veri yoksa varsayılanları yükle
+    // --- EMAILJS AYARLARI (BURAYI KENDİ BİLGİLERİNLE DOLDUR) ---
+    (function() {
+        emailjs.init("YOUR_PUBLIC_KEY"); // Buraya EmailJS Public Key gelecek
+    })();
+
+    const SERVICE_ID = "YOUR_SERVICE_ID"; 
+    const TEMPLATE_ID = "YOUR_TEMPLATE_ID";
+
+    // --- VERİ SİSTEMİ ---
+    const DB_KEY = 'SOFTDRIVE_FINAL_DB';
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
-        news: [{id: 1, title:"Hoş Geldiniz", img:"https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800", full:"Admin paneli aktif!"}],
-        forum: [{id: 1, title:"SoftDrive hakkında ne düşünüyorsunuz?", author:"Yönetici"}],
-        user: null
+        news: [{id: 1, title: "Yeni Porsche Mission X", img: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800", full: "Elektrikli hiper otomobil."}],
+        topics: [], user: null, comments: {}, reactions: {}, stats: {comments:0, reactions:0}
     };
-
-    let editingId = null;
-
     function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
-    // --- UI GÜNCELLEME ---
-    function updateUI() {
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const adminNav = document.getElementById('nav-admin');
+    let tempUser = null;
+    let generatedCode = null;
 
-        if(db.user) {
-            loginBtn.style.display = 'none';
-            logoutBtn.style.display = 'block';
-            logoutBtn.innerText = `Çıkış (${db.user.name})`;
-            adminNav.style.display = db.user.role === 'admin' ? 'block' : 'none';
-            document.getElementById('prof-name').innerText = db.user.name;
-            document.getElementById('prof-email').innerText = db.user.email;
+    // --- KAYIT VE E-POSTA GÖNDERİMİ ---
+    async function handleRegister() {
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        const pass = document.getElementById('reg-pass').value;
+
+        if(!name || !email.includes('@')) return alert("Lütfen geçerli bilgiler girin!");
+
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('reg-btn').disabled = true;
+
+        generatedCode = Math.floor(1000 + Math.random() * 9000);
+        tempUser = { name, email, role: 'user' };
+
+        // EmailJS ile gerçek mail gönderimi
+        const templateParams = {
+            to_email: email,
+            to_name: name,
+            code: generatedCode
+        };
+
+        try {
+            // NOT: Eğer anahtarları henüz girmediysen bu kısım hata verir.
+            // Anahtarların yoksa sadece simüle etmek için aşağıdaki "await" satırını yorum satırı yapabilirsin.
+            await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams);
+            
+            alert("Doğrulama kodu e-postana gönderildi!");
+            switchAuth('verify');
+        } catch (error) {
+            console.error("E-posta gönderilemedi:", error);
+            alert("E-posta gönderilirken bir hata oluştu. (Lütfen EmailJS anahtarlarını kontrol edin veya simülasyonu kullanın)");
+            // Hata olsa bile test için devam etmek istersen switchAuth('verify') buraya çekilebilir.
+        } finally {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('reg-btn').disabled = false;
+        }
+    }
+
+    function handleVerify() {
+        const input = document.getElementById('verify-input').value;
+        if(input == generatedCode) {
+            db.user = tempUser;
+            save();
+            alert("Hoş geldin! Hesabın onaylandı.");
+            closeModal('authModal');
+            updateUI();
         } else {
-            loginBtn.style.display = 'block';
-            logoutBtn.style.display = 'none';
-            adminNav.style.display = 'none';
-            document.getElementById('prof-name').innerText = "Misafir";
+            alert("Hatalı kod!");
+        }
+    }
+
+    // --- DİĞER TEMEL FONKSİYONLAR ---
+    function updateUI() {
+        const u = db.user;
+        document.getElementById('login-btn').style.display = u ? 'none' : 'block';
+        document.getElementById('logout-btn').style.display = u ? 'block' : 'none';
+        document.getElementById('nav-admin').style.display = (u && u.role==='admin') ? 'block' : 'none';
+        if(u) {
+            document.getElementById('prof-name').innerText = u.name;
+            document.getElementById('prof-email').innerText = u.email;
+            document.getElementById('logout-btn').innerText = `Çıkış (${u.name})`;
         }
     }
 
     function showPage(p) {
-        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.page-section').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+        const target = document.getElementById(p+'-page');
+        target.style.display = 'block'; setTimeout(() => target.classList.add('active'), 50);
         document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-        document.getElementById(p+'-page').classList.add('active');
         if(document.getElementById('nav-'+p)) document.getElementById('nav-'+p).classList.add('active');
-        
-        if(p==='news') { closeNewsDetail(); renderNews(); }
-        if(p==='forum') renderForum();
-        if(p==='admin') renderAdminPanels();
+        if(p==='news') renderNews();
+        if(p==='community') renderCommunity();
         updateUI();
     }
 
-    // --- HABERLER ---
     function renderNews() {
-        const container = document.getElementById('news-grid');
-        container.innerHTML = db.news.map(n => `
-            <div class="news-item" onclick="showNewsDetail(${n.id})">
-                <img src="${n.img}" class="news-img" onerror="this.src='https://via.placeholder.com/400x200'">
-                <div style="padding:15px"><h3>${n.title}</h3></div>
-            </div>
-        `).join('');
+        document.getElementById('news-grid').innerHTML = db.news.map(n => `
+            <div class="news-item" onclick="openNewsDetail(${n.id})">
+                <img src="${n.img}" onerror="this.src='https://via.placeholder.com/600x400'">
+                <div class="news-overlay"><h2>${n.title}</h2></div>
+            </div>`).join('');
     }
 
-    function showNewsDetail(id) {
+    function openNewsDetail(id) {
         const n = db.news.find(x => x.id == id);
-        if(!n) return;
-        document.getElementById('news-list-container').style.display = 'none';
-        document.getElementById('news-detail-view').style.display = 'block';
+        document.getElementById('news-list-container').style.display='none';
+        document.getElementById('news-detail-view').style.display='block';
         document.getElementById('full-img').src = n.img;
         document.getElementById('full-title').innerText = n.title;
         document.getElementById('full-content').innerText = n.full;
     }
 
-    function closeNewsDetail() {
-        document.getElementById('news-detail-view').style.display = 'none';
-        document.getElementById('news-list-container').style.display = 'block';
-    }
-
-    // --- YÖNETİM İŞLEMLERİ (SİLME VE DÜZENLEME) ---
-    function renderAdminPanels() {
-        // Haber Listesini Bas
-        document.getElementById('adm-news-list').innerHTML = db.news.map(n => `
-            <div class="admin-list-item">
-                <span>${n.title}</span>
-                <div>
-                    <button class="btn-sm btn-edit" onclick="startEditNews(${n.id})">Düzenle</button>
-                    <button class="btn-sm btn-delete" onclick="deleteNews(${n.id})">SİL</button>
-                </div>
-            </div>
-        `).join('');
-
-        // Forum Listesini Bas
-        document.getElementById('adm-forum-list').innerHTML = db.forum.map(f => `
-            <div class="admin-list-item">
-                <span>${f.title}</span>
-                <button class="btn-sm btn-delete" onclick="deleteForum(${f.id})">SİL</button>
-            </div>
-        `).join('');
-    }
-
-    function deleteNews(id) {
-        if(confirm("Bu haberi SİLECEĞİM. Onaylıyor musun?")) {
-            db.news = db.news.filter(n => n.id != id); // Silme işlemi
-            save(); // Hafızaya kaydet
-            renderAdminPanels(); // Listeyi güncelle
-            alert("Haber silindi.");
-        }
-    }
-
-    function deleteForum(id) {
-        if(confirm("Bu soruyu SİLECEĞİM. Onaylıyor musun?")) {
-            db.forum = db.forum.filter(f => f.id != id); // Silme işlemi
-            save(); // Hafızaya kaydet
-            renderAdminPanels(); // Listeyi güncelle
-            alert("Soru silindi.");
-        }
-    }
-
-    function adminSaveNews() {
-        const title = document.getElementById('adm-news-title').value;
-        const img = document.getElementById('adm-news-img').value;
-        const full = document.getElementById('adm-news-full').value;
-        
-        if(!title || !img) return alert("Başlık ve Resim alanı boş olamaz!");
-
-        if(editingId !== null) {
-            const index = db.news.findIndex(x => x.id == editingId);
-            db.news[index] = { id: editingId, title, img, full };
-            editingId = null;
-            alert("Değişiklikler kaydedildi.");
-        } else {
-            db.news.unshift({ id: Date.now(), title, img, full });
-            alert("Haber eklendi.");
-        }
-        
-        save();
-        cancelNewsEdit();
-        renderAdminPanels();
-    }
-
-    function startEditNews(id) {
-        const n = db.news.find(x => x.id == id);
-        editingId = n.id;
-        document.getElementById('adm-news-title').value = n.title;
-        document.getElementById('adm-news-img').value = n.img;
-        document.getElementById('adm-news-full').value = n.full;
-        document.getElementById('adm-form-title').innerText = "📝 Haberi Güncelle";
-        document.getElementById('adm-cancel-btn').style.display = "block";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function cancelNewsEdit() {
-        editingId = null;
-        document.getElementById('adm-form-title').innerText = "📰 Haber Ekle/Düzenle";
-        document.getElementById('adm-cancel-btn').style.display = "none";
-        document.getElementById('adm-news-title').value = "";
-        document.getElementById('adm-news-img').value = "";
-        document.getElementById('adm-news-full').value = "";
-    }
-
-    // --- DİĞER ---
-    function renderForum() {
-        document.getElementById('forum-container').innerHTML = db.forum.map(f => `
-            <div class="card"><strong>${f.title}</strong><br><small>Yazar: ${f.author}</small></div>
-        `).join('');
-    }
-
-    function addForumPost() {
-        if(!db.user) return openAuthModal();
-        const t = document.getElementById('forum-q-title').value;
-        if(!t) return;
-        db.forum.unshift({ id: Date.now(), title: t, author: db.user.name });
-        save(); renderForum(); document.getElementById('forum-q-title').value="";
-    }
+    function closeNewsDetail() { document.getElementById('news-detail-view').style.display='none'; document.getElementById('news-list-container').style.display='block'; }
 
     function handleLogin() {
-        const e = document.getElementById('login-email').value;
-        const p = document.getElementById('login-pass').value;
-        if(e === "admin@softdrive.com" && p === "admin123") {
-            db.user = { name: "Yönetici", role: "admin", email: e };
-            save(); updateUI(); closeAuthModal(); showPage('admin');
-        } else if(e.includes('@')) {
-            db.user = { name: e.split('@')[0], role: "user", email: e };
-            save(); updateUI(); closeAuthModal(); showPage('news');
-        } else alert("Geçersiz e-posta!");
+        const e = document.getElementById('log-email').value, p = document.getElementById('log-pass').value;
+        if(e === "admin@softdrive.com" && p === "admin123") db.user = {name:"Admin", role:"admin", email:e};
+        else if(e.includes('@')) db.user = {name: e.split('@')[0], role:"user", email:e};
+        save(); updateUI(); closeModal('authModal');
     }
 
     function handleLogout() { db.user = null; save(); updateUI(); showPage('news'); }
-    function openAuthModal() { document.getElementById('authModal').style.display = 'flex'; }
-    function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
+    function openAuthModal() { document.getElementById('authModal').style.display='flex'; }
+    function closeModal(id) { document.getElementById(id).style.display='none'; }
+    function switchAuth(v) { 
+        ['view-login', 'view-register', 'view-verify'].forEach(id => document.getElementById(id).style.display='none');
+        document.getElementById('view-'+v).style.display='block';
+    }
 
-    // BAŞLAT
-    updateUI();
-    renderNews();
+    function toggleTheme() {
+        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        document.getElementById('theme-icon').innerText = t === 'dark' ? '☀️' : '🌙';
+    }
+
+    updateUI(); renderNews();
 </script>
 </body>
 </html>
